@@ -15,10 +15,6 @@ This project provides a comprehensive Python framework for analyzing cointegrati
 ## Installation
 
 1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/victorrr.git
-    cd victorrr
-    ```
 2.  **Create a virtual environment (recommended):**
     ```bash
     python -m venv venv
