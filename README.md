@@ -28,7 +28,7 @@ This project provides a comprehensive Python framework for analyzing cointegrati
 
 ## Usage
 
-The primary entry point for examples is `testing/cointegration_examples.py`.
+The primary entry point for examples is `cointegration_examples.py`.
 
 1.  **Set your Twelve Data API Key:**    
     *   **Windows:**
@@ -43,13 +43,13 @@ The primary entry point for examples is `testing/cointegration_examples.py`.
 2.  **Run the examples:**
     Navigate to the project root and execute the `cointegration_examples.py` script:
     ```bash
-    python testing/cointegration_examples.py
+    python cointegration_examples.py
     ```
     The script will present a menu of available examples (Technology Stocks, Gold vs Bitcoin, Crypto Portfolio, Stock Indices) and will run a default example.
 
 ## Project Structure
 
-*   `testing/cointegration_framework.py`: Contains the core `CointegrationFramework` class with all the statistical and plotting logic.
-*   `testing/cointegration_examples.py`: Demonstrates how to use the `CointegrationFramework` with various financial assets.
+*   `cointegration_framework.py`: Contains the core `CointegrationFramework` class with all the statistical and plotting logic.
+*   `cointegration_examples.py`: Demonstrates how to use the `CointegrationFramework` with various financial assets.
 
 
