@@ -1,7 +1,7 @@
-# Framework d'Analyse de Cointegration
-# 
-# Ce module fournit un framework complet pour étudier la cointegration entre plusieurs symboles financiers 
-# en utilisant les données de Twelve Data.
+# Cointegration Analysis Framework
+#
+# This module provides a complete framework for studying cointegration
+# between multiple financial symbols using data from Twelve Data.
 
 import pandas as pd
 import numpy as np
@@ -23,7 +23,7 @@ sns.set_palette("husl")
 
 
 class CointegrationFramework:
-    """Framework pour l'analyse de cointegration de plusieurs symboles financiers"""
+    """Framework for analysing cointegration between multiple financial symbols."""
     
     def __init__(self, api_key: str):
         self.td_client = TDClient(apikey=api_key)
@@ -35,18 +35,18 @@ class CointegrationFramework:
     def download_data(self, symbols: List[str], interval: str = '1day', 
                      outputsize: int = 5000, start_date: str = None) -> Dict:
         """
-        Télécharge les données pour une liste de symboles depuis Twelve Data
+        Downloads data for a list of symbols from Twelve Data
         
         Args:
-            symbols: Liste des symboles à télécharger
-            interval: Intervalle de temps (1min, 5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month)
-            outputsize: Nombre de points de données à récupérer
-            start_date: Date de début (format YYYY-MM-DD)
+            symbols: List of symbols to download
+            interval: Time interval (1min, 5min, 15min, 30min, 45min, 1h, 2h, 4h, 1day, 1week, 1month)
+            outputsize: Number of data points to retrieve
+            start_date: Start date (YYYY-MM-DD format)
         
         Returns:
-            Dictionnaire contenant les données pour chaque symbole
+            Dictionary containing data for each symbol
         """
-        print(f"Téléchargement des données pour {len(symbols)} symboles...")
+        print(f"Downloading data for {len(symbols)} symbols…")
         
         for symbol in symbols:
             try:
@@ -58,28 +58,28 @@ class CointegrationFramework:
                 )
                 
                 df = ts.as_pandas()
-                # La bibliothèque retourne déjà les données avec un index datetime trié.
+                # The library already returns data with a sorted datetime index.
                 
                 self.data[symbol] = df
-                print(f"✓ {symbol}: {len(df)} points de données")
+                print(f"✓ {symbol}: {len(df)} data points")
                 
             except Exception as e:
-                print(f"✗ Erreur lors du téléchargement de {symbol}: {str(e)}")
+                print(f"✗ Error while downloading {symbol}: {str(e)}")
         
         return self.data
     
     def prepare_price_matrix(self, price_column: str = 'close') -> pd.DataFrame:
         """
-        Prépare une matrice de prix alignée pour tous les symboles
+        Prepares an aligned price matrix for all symbols
         
         Args:
-            price_column: Colonne de prix à utiliser ('open', 'high', 'low', 'close')
+            price_column: Price column to use ('open', 'high', 'low', 'close')
         
         Returns:
-            DataFrame avec les prix alignés
+            DataFrame with aligned prices
         """
         if not self.data:
-            raise ValueError("Aucune donnée disponible. Utilisez download_data() d'abord.")
+            raise ValueError("No data available. Call download_data() first.")
         
         price_data = {}
         for symbol, df in self.data.items():
@@ -89,21 +89,21 @@ class CointegrationFramework:
         self.prices_df = pd.DataFrame(price_data)
         self.prices_df.dropna(inplace=True)
         
-        print(f"Matrice de prix créée: {self.prices_df.shape[0]} observations, {self.prices_df.shape[1]} symboles")
+        print(f"Price matrix created: {self.prices_df.shape[0]} observations, {self.prices_df.shape[1]} symbols")
         return self.prices_df
     
     def calculate_returns(self, method: str = 'log') -> pd.DataFrame:
         """
-        Calcule les rendements pour tous les symboles
+        Calculates returns for all symbols
         
         Args:
-            method: 'log' pour rendements logarithmiques, 'simple' pour rendements simples
+            method: 'log' for logarithmic returns, 'simple' for simple returns
         
         Returns:
-            DataFrame des rendements
+            DataFrame of returns
         """
         if self.prices_df is None:
-            raise ValueError("Préparez d'abord la matrice de prix avec prepare_price_matrix()")
+            raise ValueError("Prepare the price matrix first with prepare_price_matrix().")
         
         if method == 'log':
             self.returns_df = np.log(self.prices_df / self.prices_df.shift(1))
@@ -115,14 +115,14 @@ class CointegrationFramework:
 
     def test_stationarity(self, series: pd.Series, name: str = "") -> Dict:
         """
-        Test de stationnarité avec Augmented Dickey-Fuller
+        Stationarity test with Augmented Dickey-Fuller
         
         Args:
-            series: Série temporelle à tester
-            name: Nom de la série pour l'affichage
+            series: Time series to test
+            name: Name of the series for display
         
         Returns:
-            Dictionnaire avec les résultats du test
+            Dictionary with test results
         """
         result = adfuller(series.dropna())
         
@@ -138,21 +138,21 @@ class CointegrationFramework:
     
     def test_all_stationarity(self) -> pd.DataFrame:
         """
-        Teste la stationnarité de tous les prix et rendements
+        Tests the stationarity of all prices and returns
         
         Returns:
-            DataFrame avec les résultats des tests
+            DataFrame with test results
         """
         results = []
         
-        # Test des prix (niveaux)
+        # Price tests (levels)
         if self.prices_df is not None:
             for col in self.prices_df.columns:
                 result = self.test_stationarity(self.prices_df[col], f"{col}_price")
                 result['type'] = 'Price'
                 results.append(result)
         
-        # Test des rendements
+        # Returns tests
         if self.returns_df is not None:
             for col in self.returns_df.columns:
                 result = self.test_stationarity(self.returns_df[col], f"{col}_return")
@@ -164,26 +164,26 @@ class CointegrationFramework:
     def engle_granger_test(self, y: pd.Series, x: pd.Series, 
                             symbol_y: str, symbol_x: str) -> Dict:
         """
-        Test de cointegration d'Engle-Granger entre deux séries
+        Engle-Granger cointegration test between two series
         
         Args:
-            y: Série dépendante
-            x: Série indépendante
-            symbol_y: Nom du symbole y
-            symbol_x: Nom du symbole x
+            y: Dependent series
+            x: Independent series
+            symbol_y: Name of symbol y
+            symbol_x: Name of symbol x
         
         Returns:
-            Dictionnaire avec les résultats du test
+            Dictionary with test results
         """
-        # Test de cointegration
+        # Cointegration test
         coint_stat, p_value, critical_values = coint(y, x)
         
-        # Régression pour obtenir les résidus
+        # Regression to obtain residuals
         X = x.values.reshape(-1, 1)
         reg = LinearRegression().fit(X, y.values)
         residuals = y.values - reg.predict(X)
         
-        # Test de stationnarité des résidus
+        # Stationarity test of residuals
         residuals_series = pd.Series(residuals, index=y.index)
         residuals_test = self.test_stationarity(residuals_series, "residuals")
         
@@ -201,23 +201,23 @@ class CointegrationFramework:
 
     def pairwise_cointegration(self) -> pd.DataFrame:
         """
-        Teste la cointegration pour toutes les paires de symboles (évite les doublons)
+        Tests cointegration for all symbol pairs (avoids duplicates)
         
         Returns:
-            DataFrame avec les résultats de cointegration
+            DataFrame with cointegration results
         """
         if self.prices_df is None:
-            raise ValueError("Préparez d'abord la matrice de prix")
+            raise ValueError("Prepare the price matrix first.")
         
         results = []
         symbols = self.prices_df.columns.tolist()
         n_pairs = len(symbols) * (len(symbols) - 1) // 2
         
-        print(f"Test de cointegration pour {len(symbols)} symboles ({n_pairs} paires)...")
+        print(f"Cointegration test for {len(symbols)} symbols ({n_pairs} pairs)...")
         
         for i, symbol_y in enumerate(symbols):
             for j, symbol_x in enumerate(symbols):
-                # Éviter l'auto-cointegration et les doublons
+                # Avoid auto-cointegration and duplicates
                 if i >= j:
                     continue
                 
@@ -230,12 +230,12 @@ class CointegrationFramework:
                     )
                     results.append(result)
                 except Exception as e:
-                    print(f"Erreur pour la paire {symbol_y}-{symbol_x}: {str(e)}")
+                    print(f"Error for pair {symbol_y}-{symbol_x}: {str(e)}")
         
-        # Stockage des résultats
+        # Store results
         self.cointegration_results['pairwise'] = results
         
-        # Création du DataFrame de résultats
+        # Create results DataFrame
         df_results = pd.DataFrame([
             {
                 'pair': r['pair'],
@@ -251,21 +251,21 @@ class CointegrationFramework:
 
     def johansen_test(self, max_lags: int = 12) -> Dict:
         """
-        Test de cointegration de Johansen pour analyse multivariée
+        Johansen cointegration test for multivariate analysis
         
         Args:
-            max_lags: Nombre maximum de lags à considérer
+            max_lags: Maximum number of lags to consider
         
         Returns:
-            Dictionnaire avec les résultats du test de Johansen
+            Dictionary with Johansen test results
         """
         if self.prices_df is None:
-            raise ValueError("Préparez d'abord la matrice de prix")
+            raise ValueError("Prepare the price matrix first.")
         
-        # Test de Johansen
+        # Johansen test
         result = coint_johansen(self.prices_df.values, det_order=0, k_ar_diff=max_lags)
         
-        # Extraction des résultats
+        # Extract results
         johansen_results = {
             'trace_stats': result.lr1,
             'max_eigen_stats': result.lr2,
@@ -276,7 +276,7 @@ class CointegrationFramework:
             'symbols': self.prices_df.columns.tolist()
         }
         
-        # Détermination du nombre de relations de cointegration
+        # Determine the number of cointegration relationships
         n_coint_trace = 0
         n_coint_max_eigen = 0
         
@@ -295,29 +295,29 @@ class CointegrationFramework:
 
     def plot_prices(self, figsize: Tuple[int, int] = (15, 8), normalize: bool = True):
         """
-        Graphique des prix pour tous les symboles
+        Price chart for all symbols
         
         Args:
-            figsize: Taille de la figure
-            normalize: Si True, normalise les prix à 100 au début
+            figsize: Figure size
+            normalize: If True, normalizes prices to 100 at the beginning
         """
         if self.prices_df is None:
-            raise ValueError("Aucune donnée de prix disponible")
+            raise ValueError("No price data available")
         
         plt.figure(figsize=figsize)
         
         if normalize:
-            # Normalisation des prix (base 100)
+            # Price normalization (base 100)
             normalized_prices = (self.prices_df / self.prices_df.iloc[0]) * 100
             for col in normalized_prices.columns:
                 plt.plot(normalized_prices.index, normalized_prices[col], label=col, linewidth=2)
-            plt.ylabel('Prix Normalisé (Base 100)')
-            plt.title('Évolution des Prix Normalisés')
+            plt.ylabel('Normalized Price (Base 100)')
+            plt.title('Evolution of Normalized Prices')
         else:
             for col in self.prices_df.columns:
                 plt.plot(self.prices_df.index, self.prices_df[col], label=col, linewidth=2)
-            plt.ylabel('Prix')
-            plt.title('Évolution des Prix')
+            plt.ylabel('Price')
+            plt.title('Evolution of Prices')
         
         plt.xlabel('Date')
         plt.legend()
@@ -327,20 +327,20 @@ class CointegrationFramework:
     
     def plot_correlation_matrix(self, data_type: str = 'prices', figsize: Tuple[int, int] = (10, 8)):
         """
-        Matrice de corrélation
+        Correlation matrix
         
         Args:
-            data_type: 'prices' ou 'returns'
-            figsize: Taille de la figure
+            data_type: 'prices' or 'returns'
+            figsize: Figure size
         """
         if data_type == 'prices' and self.prices_df is not None:
             data = self.prices_df
-            title = 'Matrice de Corrélation - Prix'
+            title = 'Correlation Matrix - Prices'
         elif data_type == 'returns' and self.returns_df is not None:
             data = self.returns_df
-            title = 'Matrice de Corrélation - Rendements'
+            title = 'Correlation Matrix - Returns'
         else:
-            raise ValueError(f"Données {data_type} non disponibles")
+            raise ValueError(f"Data {data_type} not available")
         
         plt.figure(figsize=figsize)
         correlation_matrix = data.corr()
@@ -358,15 +358,15 @@ class CointegrationFramework:
     
     def plot_cointegration_heatmap(self, figsize: Tuple[int, int] = (12, 10)):
         """
-        Heatmap des p-values de cointegration
+        Heatmap of cointegration p-values
         
         Args:
-            figsize: Taille de la figure
+            figsize: Figure size
         """
         if 'pairwise' not in self.cointegration_results:
-            raise ValueError("Effectuez d'abord le test de cointegration pairwise")
+            raise ValueError("Perform pairwise cointegration test first")
         
-        # Création de la matrice des p-values
+        # Create p-value matrix
         symbols = self.prices_df.columns.tolist()
         n_symbols = len(symbols)
         p_value_matrix = np.ones((n_symbols, n_symbols))
@@ -377,7 +377,7 @@ class CointegrationFramework:
             x_idx = symbols.index(pair[1])
             p_value_matrix[y_idx, x_idx] = result['p_value']
         
-        # Création du heatmap
+        # Create heatmap
         plt.figure(figsize=figsize)
         sns.heatmap(p_value_matrix,
                    xticklabels=symbols,
@@ -388,25 +388,25 @@ class CointegrationFramework:
                    fmt='.3f',
                    cbar_kws={'label': 'P-value'})
         
-        plt.title('Heatmap des P-values de Cointegration\n(Vert = Cointegré, Rouge = Non Cointegré)')
-        plt.xlabel('Symbole X (Variable Indépendante)')
-        plt.ylabel('Symbole Y (Variable Dépendante)')
+        plt.title('Cointegration P-values Heatmap\n(Green = Cointegrated, Red = Non Cointegrated)')
+        plt.xlabel('Symbol X (Independent Variable)')
+        plt.ylabel('Symbol Y (Dependent Variable)')
         plt.tight_layout()
         plt.show()
     
     def plot_residuals(self, symbol_y: str, symbol_x: str, figsize: Tuple[int, int] = (15, 10)):
         """
-        Graphique des résidus pour une paire cointegree
+        Residual plot for a cointegrated pair
         
         Args:
-            symbol_y: Symbole dépendant
-            symbol_x: Symbole indépendant
-            figsize: Taille de la figure
+            symbol_y: Dependent symbol
+            symbol_x: Independent symbol
+            figsize: Figure size
         """
         if 'pairwise' not in self.cointegration_results:
-            raise ValueError("Effectuez d'abord le test de cointegration pairwise")
+            raise ValueError("Perform pairwise cointegration test first")
         
-        # Recherche des résultats pour cette paire
+        # Search for results for this pair
         pair_name = f"{symbol_y} ~ {symbol_x}"
         result = None
         
@@ -416,49 +416,49 @@ class CointegrationFramework:
                 break
         
         if result is None:
-            raise ValueError(f"Paire {pair_name} non trouvée dans les résultats")
+            raise ValueError(f"Pair {pair_name} not found in results")
         
         fig, axes = plt.subplots(2, 2, figsize=figsize)
         
-        # 1. Scatter plot des prix
+        # 1. Price scatter plot
         axes[0, 0].scatter(self.prices_df[symbol_x], self.prices_df[symbol_y], alpha=0.6)
-        axes[0, 0].set_xlabel(f'Prix {symbol_x}')
-        axes[0, 0].set_ylabel(f'Prix {symbol_y}')
-        axes[0, 0].set_title(f'Relation {symbol_y} vs {symbol_x}')
+        axes[0, 0].set_xlabel(f'Price {symbol_x}')
+        axes[0, 0].set_ylabel(f'Price {symbol_y}')
+        axes[0, 0].set_title(f'Relationship {symbol_y} vs {symbol_x}')
         axes[0, 0].grid(True, alpha=0.3)
         
-        # 2. Série temporelle des résidus
+        # 2. Time series of residuals
         axes[0, 1].plot(result['residuals'].index, result['residuals'], linewidth=1)
         axes[0, 1].axhline(y=0, color='red', linestyle='--', alpha=0.7)
         axes[0, 1].set_xlabel('Date')
-        axes[0, 1].set_ylabel('Résidus')
-        axes[0, 1].set_title('Série Temporelle des Résidus')
+        axes[0, 1].set_ylabel('Residuals')
+        axes[0, 1].set_title('Time Series of Residuals')
         axes[0, 1].grid(True, alpha=0.3)
         
-        # 3. Histogramme des résidus
+        # 3. Histogram of residuals
         axes[1, 0].hist(result['residuals'], bins=50, alpha=0.7, edgecolor='black')
         axes[1, 0].axvline(x=0, color='red', linestyle='--', alpha=0.7)
-        axes[1, 0].set_xlabel('Résidus')
-        axes[1, 0].set_ylabel('Fréquence')
-        axes[1, 0].set_title('Distribution des Résidus')
+        axes[1, 0].set_xlabel('Residuals')
+        axes[1, 0].set_ylabel('Frequency')
+        axes[1, 0].set_title('Distribution of Residuals')
         axes[1, 0].grid(True, alpha=0.3)
         
-        # 4. Q-Q plot des résidus
+        # 4. Q-Q plot of residuals
         from scipy import stats
         stats.probplot(result['residuals'], dist="norm", plot=axes[1, 1])
-        axes[1, 1].set_title('Q-Q Plot des Résidus')
+        axes[1, 1].set_title('Q-Q Plot of Residuals')
         axes[1, 1].grid(True, alpha=0.3)
         
-        plt.suptitle(f'Analyse des Résidus - {pair_name}\nP-value: {result["p_value"]:.4f}, Cointegré: {result["is_cointegrated"]}')
+        plt.suptitle(f'Residual Analysis - {pair_name}\nP-value: {result["p_value"]:.4f}, Cointegrated: {result["is_cointegrated"]}')
         plt.tight_layout()
         plt.show()
 
     def generate_summary_report(self) -> Dict:
         """
-        Génère un rapport de synthèse complet
+        Generates a comprehensive summary report
         
         Returns:
-            Dictionnaire contenant le rapport de synthèse
+            Dictionary containing the summary report
         """
         report = {
             'data_summary': {},
@@ -467,7 +467,7 @@ class CointegrationFramework:
             'recommendations': []
         }
         
-        # Résumé des données
+        # Data summary
         if self.prices_df is not None:
             report['data_summary'] = {
                 'n_symbols': len(self.prices_df.columns),
@@ -479,7 +479,7 @@ class CointegrationFramework:
                 'n_observations': len(self.prices_df)
             }
         
-        # Test de stationnarité
+        # Stationarity test
         stationarity_results = self.test_all_stationarity()
         if not stationarity_results.empty:
             report['stationarity_summary'] = {
@@ -489,7 +489,7 @@ class CointegrationFramework:
                 'total_return_tests': len(stationarity_results[stationarity_results['type'] == 'Return'])
             }
         
-        # Résumé de cointegration
+        # Cointegration summary
         if 'pairwise' in self.cointegration_results:
             pairwise_results = self.cointegration_results['pairwise']
             cointegrated_pairs = [r for r in pairwise_results if r['is_cointegrated']]
@@ -501,41 +501,41 @@ class CointegrationFramework:
                 'best_pairs': sorted(cointegrated_pairs, key=lambda x: x['p_value'])[:5]
             }
         
-        # Recommandations
+        # Recommendations
         if 'cointegration_summary' in report and report['cointegration_summary']['cointegrated_pairs'] > 0:
-            report['recommendations'].append("Des relations de cointegration ont été détectées - considérez des stratégies de pairs trading")
+            report['recommendations'].append("Cointegration relationships detected - consider pairs trading strategies")
         
         if 'stationarity_summary' in report:
             if report['stationarity_summary']['prices_stationary'] > 0:
-                report['recommendations'].append("Certains prix sont stationnaires - vérifiez la qualité des données")
+                report['recommendations'].append("Some prices are stationary - check data quality")
             if report['stationarity_summary']['returns_stationary'] < report['stationarity_summary']['total_return_tests']:
-                report['recommendations'].append("Certains rendements ne sont pas stationnaires - considérez des transformations supplémentaires")
+                report['recommendations'].append("Some returns are not stationary - consider additional transformations")
         
         return report
     
     
     def export_results(self, filename: str = 'cointegration_results.xlsx'):
         """
-        Exporte tous les résultats vers un fichier Excel
+        Exports all results to an Excel file
         
         Args:
-            filename: Nom du fichier de sortie
+            filename: Output filename
         """
         with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-            # Prix
+            # Prices
             if self.prices_df is not None:
-                self.prices_df.to_excel(writer, sheet_name='Prix')
+                self.prices_df.to_excel(writer, sheet_name='Prices')
             
-            # Rendements
+            # Returns
             if self.returns_df is not None:
-                self.returns_df.to_excel(writer, sheet_name='Rendements')
+                self.returns_df.to_excel(writer, sheet_name='Returns')
             
-            # Tests de stationnarité
+            # Stationarity tests
             stationarity_results = self.test_all_stationarity()
             if not stationarity_results.empty:
-                stationarity_results.to_excel(writer, sheet_name='Stationnarité', index=False)
+                stationarity_results.to_excel(writer, sheet_name='Stationarity', index=False)
             
-            # Résultats de cointegration pairwise
+            # Pairwise cointegration results
             if 'pairwise' in self.cointegration_results:
                 pairwise_df = pd.DataFrame([
                     {
@@ -549,7 +549,7 @@ class CointegrationFramework:
                 ])
                 pairwise_df.to_excel(writer, sheet_name='Cointegration_Pairwise', index=False)
             
-            # Résultats de Johansen
+            # Johansen results
             if 'johansen' in self.cointegration_results:
                 johansen_summary = pd.DataFrame({
                     'Statistic_Type': ['Trace'] * len(self.cointegration_results['johansen']['trace_stats']) + 
@@ -561,4 +561,4 @@ class CointegrationFramework:
                 })
                 johansen_summary.to_excel(writer, sheet_name='Johansen_Test', index=False)
         
-        print(f"Résultats exportés vers {filename}")
+        print(f"Results exported to {filename}")

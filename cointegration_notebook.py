@@ -1,13 +1,13 @@
 # %% [markdown]
-# # Framework d'Analyse de Cointegration
-# 
-# Ce notebook fournit un framework complet pour étudier la cointegration entre plusieurs symboles financiers en utilisant les données de Twelve Data.
+# # Cointegration Analysis Framework
+#
+# This notebook provides a complete framework for studying cointegration between multiple financial symbols using data from Twelve Data.
 
 # %%
-# Import du framework
+# Import the framework
 from cointegration_framework import CointegrationFramework
 
-# Import des exemples
+# Import example scripts
 from cointegration_examples import (
     example_tech_stocks,
     example_gold_bitcoin, 
@@ -17,22 +17,22 @@ from cointegration_examples import (
 
 # %%
 # Configuration
-API_KEY = "939b755379b946c0b4ff05f7d30467a2"  # Remplacez par votre clé API
+API_KEY = "939b755379b946c0b4ff05f7d30467a2"  # Replace with your own API key
 
-print("Framework de Cointegration importé!")
-print("Exemples disponibles:")
+print("Cointegration Framework imported!")
+print("Available examples:")
 print("- example_tech_stocks()")
 print("- example_gold_bitcoin()")
 print("- example_crypto_portfolio()")
 print("- example_indices()")
 
 # %%
-# Exemple rapide: Analyse Or vs Bitcoin
-print("Exécution de l'exemple Or vs Bitcoin...")
+# Quick example: Gold vs Bitcoin analysis
+print("Running Gold vs Bitcoin example...")
 framework = example_gold_bitcoin()
 
 # %%
-# Pour utiliser le framework directement:
+# To use the framework directly:
 # framework = CointegrationFramework(API_KEY)
 # data = framework.download_data(['AAPL', 'MSFT'], interval='1day', outputsize=500)
 # prices = framework.prepare_price_matrix('close')
