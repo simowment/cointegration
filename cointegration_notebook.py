@@ -17,7 +17,7 @@ from cointegration_examples import (
 
 # %%
 # Configuration
-API_KEY = "939b755379b946c0b4ff05f7d30467a2"  # Replace with your own API key
+API_KEY = ""  # Replace with your own API key
 
 print("Cointegration Framework imported!")
 print("Available examples:")
@@ -38,4 +38,5 @@ framework = example_gold_bitcoin()
 # prices = framework.prepare_price_matrix('close')
 # returns = framework.calculate_returns('log')
 # results = framework.pairwise_cointegration()
+
 # framework.print_summary_report()
