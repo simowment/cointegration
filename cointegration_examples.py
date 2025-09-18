@@ -360,7 +360,7 @@ if __name__ == "__main__":
     for key, (name, _) in examples.items():
         print(f"  {key}. {name}")
 
-    # Default example: Gold vs Bitcoin (uses demo key)
+    # Default example: Gold vs Bitcoin 
     print("\n" + "=" * 60)
     print("EXECUTING DEFAULT EXAMPLE: GOLD vs BITCOIN")
     print("=" * 60)
@@ -370,4 +370,4 @@ if __name__ == "__main__":
         print("\n✅ Example finished successfully!")
     except Exception as e:
         print(f"\n❌ Error during execution: {str(e)}")
-        print("Check your internet connection and API key.")
+        print("Check your internet connection and API key its free btw.")
