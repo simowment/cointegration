@@ -9,15 +9,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from twelvedata import TDClient
 from typing import List, Dict, Tuple
-import warnings
-warnings.filterwarnings('ignore')
 
-# Tests statistiques pour la cointegration
 from statsmodels.tsa.stattools import coint, adfuller
 from statsmodels.tsa.vector_ar.vecm import coint_johansen
 from sklearn.linear_model import LinearRegression
 
-# Configuration des graphiques
+import warnings
+warnings.filterwarnings('ignore')
+
+# plots setup
 plt.style.use('seaborn-v0_8')
 sns.set_palette("husl")
 
@@ -561,4 +561,5 @@ class CointegrationFramework:
                 })
                 johansen_summary.to_excel(writer, sheet_name='Johansen_Test', index=False)
         
+
         print(f"Results exported to {filename}")
